@@ -1,3 +1,11 @@
+library(shiny)
+library(dplyr)
+library(DT)
+library(data.table)
+library(shinythemes)
+library(shinyWidgets)
+
+
 server <- function(input, output) {
     # Import datasets ----
     # User data
@@ -49,4 +57,9 @@ server <- function(input, output) {
              col="red",
              ylab="Frequência")
     })
+    
+    # Test ----
+    
+   
+    
 }
