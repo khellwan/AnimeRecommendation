@@ -6,7 +6,7 @@ library(shinythemes)
 library(shinyWidgets)
 
 
-server <- function(input, output) {
+server <- function(input, output, session) {
     # Import datasets ----
     # User data
     userData <- read.csv('./data/users.csv', sep=';', header=TRUE)
@@ -45,7 +45,7 @@ server <- function(input, output) {
         data <- data$scored_by
         hist(data,
              main="Avaliações por Anime", 
-             xlab="Avaliações",
+             xlab="Número de Avaliações",
              col="yellow",
              ylab="Frequência")
     })
@@ -61,8 +61,82 @@ server <- function(input, output) {
              ylab="Frequência")
     })
     
-    # Test ----
+    # ----  Input stuff ----
     
-   
+    # Creates vector of user selected animes
+    anime_vec = reactive({
+        return(c(input$anime1, input$anime2, input$anime3, input$anime4, input$anime5))
+    })
+    
+    # Creates vector of user selected ratings
+    score_vec = reactive({
+        return(c(as.numeric(input$rating1)/10, as.numeric(input$rating2)/10, as.numeric(input$rating3)/10, as.numeric(input$rating4)/10, as.numeric(input$rating5)/10))
+    })
+    
+    # Creates a proxy table for clearing rows
+    proxy = dataTableProxy('anime_table')
+    
+    # Initialize equivalent variables in UI for anime title
+    output$anime1 = renderText({ input$anime1 })
+    output$anime2 = renderText({ input$anime2 })
+    output$anime3 = renderText({ input$anime3 })
+    output$anime4 = renderText({ input$anime4 })
+    output$anime5 = renderText({ input$anime5 })
+    
+    # Allows user to clear selected rows from the anime table. Also resets
+    # textInput box text to default
+    observeEvent(input$clearRows, {
+        proxy %>% selectRows(NULL)
+        updateTextInput(session, 'anime1', value = '---Primeiro Anime---')
+        updateTextInput(session, 'anime2', value = '---Segundo Anime---')
+        updateTextInput(session, 'anime3', value = '---Terceiro Anime---')
+        updateTextInput(session, 'anime4', value = '---Quarto Anime---')
+        updateTextInput(session, 'anime5', value = '---Quinto Anime---')
+    })
+    
+    # Allows user to reset selected ratings to default
+    observeEvent(input$clearRating, {
+        updatePrettyRadioButtons(session, 'rating1', selected = 0)
+        updatePrettyRadioButtons(session, 'rating2', selected = 0)
+        updatePrettyRadioButtons(session, 'rating3', selected = 0)
+        updatePrettyRadioButtons(session, 'rating4', selected = 0)
+        updatePrettyRadioButtons(session, 'rating5', selected = 0)
+    })
+    
+    # Checks if user anime selections are valid
+    observeEvent(input$toRate, {
+        default_animes = c('---Primeiro Anime---', '---Segundo Anime---', '---Terceiro Anime---', '---Quarto Anime---', '---Quinto Anime---')
+        
+        if ((length(unique(anime_vec())) == 5) & (all(anime_vec() %in% animesData$title))){
+            output$wrongAnimes = renderText({NULL})
+            
+            # Caso esteja tudo correto
+            # Processar aqui
+        }
+        else if (length(unique(anime_vec())) != 5){
+            output$wrongAnimes = renderText({'Por favor, selecione 5 animes DIFERENTES e clique em "enviar" novamente.'})
+        }
+        else if (any(anime_vec() %in% default_animes)){
+            output$wrongAnimes = renderText({'Um ou mais animes não foram escolhidos. Por favor, preencha os 5 campos de animes e clique em "enviar" novamente.'})
+        }
+        else if (any(anime_vec() %in% c('', ' ', '   '))){
+            output$wrongAnimes = renderText({'Um dos campos de animes está vazio, certifique de preenchê-lo e clique em "enviar" novamente.'})
+        }
+        else{
+            output$wrongAnimes = renderText({'Um erro estranho ocorreu. Cheque se todos os animes preenchidos estão corretos e clique em "enviar" novamente.'})
+        }
+    })
+    
+    # Render movie title table
+    output$movie_table = DT::renderDataTable({
+        datatable(just_movies, rownames = FALSE)
+    })
+    
+    # ---- Calculate correlation ----
+    
+    # Pegar os nomes dos animes inseridos pelo usuário (substituir para ele escolher em combobox?)
+    # Gerar uma amostra aleatória do csv de avaliações por usuário
+    # Fazer uma matriz de correlação com outros usuários
+    # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (>7)
     
 }

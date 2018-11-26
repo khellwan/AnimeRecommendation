@@ -1,19 +1,12 @@
 ## ui.R ##
-library(shiny)
-library(shinydashboard)
-library(shinyWidgets)
 
 # Sidebar ----
 sidebar <- dashboardSidebar(
     sidebarMenu(
     menuItem("Exploração dos Dados", tabName = "explore", icon = icon("dashboard")),
-    menuItem("Modelagem", icon = icon("th"), tabName = "model"),
-    menuItem("Recomendação", icon = icon("th"), tabName = "choose"),
-    menuItem("Resultado", icon = icon("th"), tabName = "result")
+    menuItem("Recomendação", icon = icon("th"), tabName = "choose")
     )
 )
-
-
 
 # Body ----
 body <- dashboardBody(
@@ -47,17 +40,13 @@ body <- dashboardBody(
                     )
                 )
         ),
-        # Modeling ----
-        tabItem(tabName = "model",
-                h2("Criação de Modelos")
-        ),
         # Recommendation ----
         tabItem(tabName = "choose", 
                 title = "Escolha seus Animes", value = 'choose',
                  h2('Escolha seus Animes', style = 'text-align:center'),
                  h4('Por favor escolha 5 animes da tabela abaixo.'),
                  h4('Você pode clicar em "Limpar Animes" para limpar os animes que você escolheu.'),
-                 DT::dataTableOutput("movie_table"),
+                 DT::dataTableOutput("anime_table"),
                  fluidRow(
                    column(
                      textInput("anime1", "Anime 1", "---Primeiro Anime---"),
@@ -93,6 +82,9 @@ body <- dashboardBody(
                    width = 6
                    )
                  ),
+                fluidRow(
+                    h3(textOutput("wrongAnimes"))
+                ),
 
                 # Rate animes tab
                 fluidRow(title = "Avalie", value = 'rate',
@@ -128,6 +120,7 @@ body <- dashboardBody(
                          prettyRadioButtons(inputId = "rating5", label = NULL,
                                             0:10, inline = TRUE, selected = 0, animation = 'pulse', icon = icon('star'))
                        ),
+                      
                        
                        # Action button to go to the next tab
                        fluidRow(
@@ -139,7 +132,7 @@ body <- dashboardBody(
                        width = 12,
                        offset = 1
                    ),
-                  # Show results tab ----
+                  # Show results  ----
                   fluidRow(title = "Seus Matches", value = 'matches',
                            fluidRow(
                              h2('Encontramos animes que combinam com você!', style = 'text-align:center'),
