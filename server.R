@@ -15,7 +15,10 @@ server <- function(input, output) {
     # Animes data
     animesData <- read.csv('./data/anime_cleaned.csv', sep=',', header=TRUE)
     animesData$aired_from_year = as.numeric(as.character(animesData$aired_from_year))
-
+    
+    #Anime x User rating table
+    userAnime <- read.table(file="./data/userAnime.csv",row.names=1,sep=",",header=TRUE)
+    
     # Menu bar ----
     output$menu <- renderMenu({
         sidebarMenu(
