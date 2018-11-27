@@ -16,15 +16,18 @@ body <- dashboardBody(
                 h2("Exploração dos Dados"),
                 # First row
                 fluidRow(
-                    box(
-                        plotOutput("scoreHist", height = 250),
-                        status = "primary"
-                    ),
-                    
-                    box(
-                        title = "Controls",
-                        status = "primary",
-                        sliderInput("slider", "Number of observations:", 1, 400000, 200000)
+                    tabBox(
+                        tabPanel(
+                            title = "Histograma das avaliações",
+                            plotOutput("scoreHist", height = 250),
+                            status = "primary"
+                        ),
+                        
+                        tabPanel(
+                            title = "Controls",
+                            status = "primary",
+                            sliderInput("slider", "Number of observations:", 1, 400000, 200000)
+                        )
                     )
                 ),
                 # Second row
@@ -42,52 +45,56 @@ body <- dashboardBody(
         ),
         # Recommendation ----
         tabItem(tabName = "choose", 
-                title = "Escolha seus Animes", value = 'choose',
-                 h2('Escolha seus Animes', style = 'text-align:center'),
-                 h4('Por favor escolha 5 animes da tabela abaixo.'),
-                 h4('Você pode clicar em "Limpar Animes" para limpar os animes que você escolheu.'),
-                 DT::dataTableOutput("anime_table"),
-                 fluidRow(
-                   column(
-                     textInput("anime1", "Anime 1", "---Primeiro Anime---"),
-                     width = 6
-                   ),
-                   column(
-                     textInput("anime2", "Anime 2", "---Segundo Anime---"),
-                     width = 6
-                   )
-                 ),
-                 fluidRow(
-                   column(
-                     textInput("anime3", "Anime 3", "---Terceiro Anime---"),
-                     width = 6
-                   ),
-                   column(
-                     textInput("anime4", "Anime 4", "---Quarto Anime---"),
-                     width = 6
-                   )
-                 ),
-                 fluidRow(
-                   column(
-                     textInput("anime5", "Anime 5", "---Quinto Anime---"),
-                     width = 6
-                   )
-                 ),
-                 fluidRow(
-                   column(
-                   actionButton("toRate", "Enviar", icon("arrow-right"), 
-                                style="color: #ffffff; background-color: #337ab7; border-color: #318fe0"),
-                   actionButton("clearRows", "Limpar Animes", icon("eraser"),
-                                style="color: #ffffff; background-color: #337ab7; border-color: #318fe0"),
-                   width = 6
-                   )
-                 ),
-                fluidRow(
-                    h3(textOutput("wrongAnimes"))
+            tabBox(
+                tabPanel( 
+                    title = "Escolha seus Animes",
+                    h2('Escolha seus Animes', style = 'text-align:center'),
+                    h4('Por favor escolha 5 animes da tabela abaixo.'),
+                    h4('Você pode clicar em "Limpar Animes" para limpar os animes que você escolheu.'),
+                    DT::dataTableOutput("anime_table"),
+                    fluidRow(
+                       column(
+                         textInput("anime1", "Anime 1", "---Primeiro Anime---"),
+                         width = 6
+                       ),
+                       column(
+                         textInput("anime2", "Anime 2", "---Segundo Anime---"),
+                         width = 6
+                       )
+                    ),
+                     fluidRow(
+                       column(
+                         textInput("anime3", "Anime 3", "---Terceiro Anime---"),
+                         width = 6
+                       ),
+                       column(
+                         textInput("anime4", "Anime 4", "---Quarto Anime---"),
+                         width = 6
+                       )
+                     ),
+                     fluidRow(
+                       column(
+                         textInput("anime5", "Anime 5", "---Quinto Anime---"),
+                         width = 6
+                       )
+                     ),
+                     fluidRow(
+                       column(
+                       actionButton("toRate", "Enviar", icon("arrow-right"), 
+                                    style="color: #ffffff; background-color: #337ab7; border-color: #318fe0"),
+                       actionButton("clearRows", "Limpar Animes", icon("eraser"),
+                                    style="color: #ffffff; background-color: #337ab7; border-color: #318fe0"),
+                       width = 6
+                       )
+                     ),
+                    fluidRow(
+                        h3(textOutput("wrongAnimes"))
+                    )
                 ),
-
+                
                 # Rate animes tab
-                fluidRow(title = "Avalie", value = 'rate',
+                tabPanel(
+                  title = "Avalie",
                   fluidRow(
                      h2('Dê a nota para os Animes', style = 'text-align:center'),
                      h4('Por favor, dê uma nota de 0 a 10 para os Animes que escolheu', style = 'text-align:center')
@@ -131,20 +138,21 @@ body <- dashboardBody(
                        ),
                        width = 12,
                        offset = 1
-                   ),
-                  # Show results  ----
-                  fluidRow(title = "Seus Matches", value = 'matches',
-                           fluidRow(
-                             h2('Encontramos animes que combinam com você!', style = 'text-align:center'),
-                             DT::dataTableOutput("match_table"), width = 12, title = 'Your Closest Matched Critics'),
-                           fluidRow(
-                             column(h3('Animes para assistir', style = 'text-align:center'),
-                                    DT::dataTableOutput('see_animes'), width = 6),
-                             column(h3('Animes para evitar', style = 'text-align:center'),
-                                    DT::dataTableOutput('avoid_animes'), width = 6))
-                  )
+                   )
+              ),
+              # Show results  ----
+              tabPanel(title = "Seus Matches",
+                       fluidRow(
+                           h2('Encontramos animes que combinam com você!', style = 'text-align:center'),
+                           DT::dataTableOutput("match_table"), width = 12, title = 'Your Closest Matched Critics'),
+                       fluidRow(
+                           column(h3('Animes para assistir', style = 'text-align:center'),
+                                  DT::dataTableOutput('see_animes'), width = 6),
+                           column(h3('Animes para evitar', style = 'text-align:center'),
+                                  DT::dataTableOutput('avoid_animes'), width = 6))
               )
           )
+        )
        )
     )
 # DashboardPage ----

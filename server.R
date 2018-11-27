@@ -15,7 +15,7 @@ server <- function(input, output, session) {
     # Animes data
     animesData <- read.csv('./data/anime_cleaned.csv', sep=',', header=TRUE)
     animesData$aired_from_year = as.numeric(as.character(animesData$aired_from_year))
-    
+
     #Anime x User rating table
     userAnime <- read.table(file="./data/userAnime.csv",row.names=1,sep=",",header=TRUE)
     
@@ -59,6 +59,14 @@ server <- function(input, output, session) {
              xlab="Anos",
              col="red",
              ylab="Frequência")
+    })
+    
+    # Render movie title table
+    df <- data.frame(animesData$title)
+    colnames(df) <- c("Animes")
+    output$anime_table = DT::renderDataTable({
+        df
+        
     })
     
     # ----  Input stuff ----
@@ -127,10 +135,6 @@ server <- function(input, output, session) {
         }
     })
     
-    # Render movie title table
-    output$movie_table = DT::renderDataTable({
-        datatable(just_movies, rownames = FALSE)
-    })
     
     # ---- Calculate correlation ----
     
