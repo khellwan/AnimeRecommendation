@@ -111,15 +111,46 @@ server <- function(input, output, session) {
         updatePrettyRadioButtons(session, 'rating5', selected = 0)
     })
     
+    # Updates movie selection based on data table rows selected
+    observeEvent(input$anime_table_rows_selected, {
+        rows = input$anime_table_rows_selected
+        if (length(rows) == 1){
+            updateTextInput(session, 'anime1', value = animesData$title[rows[1]])
+        }
+        
+        else if (length(rows) == 2){
+            updateTextInput(session, 'anime1', value = animesData$title[rows[1]])
+            updateTextInput(session, 'anime2', value = animesData$title[rows[2]])
+        }
+        
+        else if (length(rows) == 3){
+            updateTextInput(session, 'anime1', value = animesData$title[rows[1]])
+            updateTextInput(session, 'anime2', value = animesData$title[rows[2]])
+            updateTextInput(session, 'anime3', value = animesData$title[rows[3]])
+        }
+        
+        else if (length(rows) == 4){
+            updateTextInput(session, 'anime1', value = animesData$title[rows[1]])
+            updateTextInput(session, 'anime2', value = animesData$title[rows[2]])
+            updateTextInput(session, 'anime3', value = animesData$title[rows[3]])
+            updateTextInput(session, 'anime4', value = animesData$title[rows[4]])
+        }
+        
+        else if (length(rows) == 5){
+            updateTextInput(session, 'anime1', value = animesData$title[rows[1]])
+            updateTextInput(session, 'anime2', value = animesData$title[rows[2]])
+            updateTextInput(session, 'anime3', value = animesData$title[rows[3]])
+            updateTextInput(session, 'anime4', value = animesData$title[rows[4]])
+            updateTextInput(session, 'anime5', value = animesData$title[rows[5]])
+        }
+    })
+    
     # Checks if user anime selections are valid
     observeEvent(input$toRate, {
         default_animes = c('---Primeiro Anime---', '---Segundo Anime---', '---Terceiro Anime---', '---Quarto Anime---', '---Quinto Anime---')
-        
         if ((length(unique(anime_vec())) == 5) & (all(anime_vec() %in% animesData$title))){
             output$wrongAnimes = renderText({NULL})
-            
-            # Caso esteja tudo correto
-            # Processar aqui
+            updateTabsetPanel(session, 'inTabset', selected='avalie')
         }
         else if (length(unique(anime_vec())) != 5){
             output$wrongAnimes = renderText({'Por favor, selecione 5 animes DIFERENTES e clique em "enviar" novamente.'})
@@ -135,12 +166,21 @@ server <- function(input, output, session) {
         }
     })
     
+    # Creates the users match dataframe and changes to result tab
+    observeEvent(input$toMatches, {
+        # Criar dataframe com matches de outros usuários
+        # Renderizar tabela de match usando o dataframe
+        # Change tab to result
+        updateTabsetPanel(session, 'inTabset', selected = 'result')
+    })
+    
     
     # ---- Calculate correlation ----
     
-    # Pegar os nomes dos animes inseridos pelo usuário (substituir para ele escolher em combobox?)
+    # Pegar os nomes dos animes inseridos pelo usuário (que estão no vetor anime_vec)
     # Gerar uma amostra aleatória do csv de avaliações por usuário
     # Fazer uma matriz de correlação com outros usuários
-    # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (>7)
+    # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (na tabela see_animes)
+    # Devolver outros animes que esses usuários com alta correlação avaliaram negativamente (na tabela avoid_animes)
     
 }

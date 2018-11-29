@@ -44,10 +44,12 @@ body <- dashboardBody(
                 )
         ),
         # Recommendation ----
-        tabItem(tabName = "choose", 
+        tabItem(tabName = "choose",
             tabBox(
+                id = 'inTabset',
                 tabPanel( 
                     title = "Escolha seus Animes",
+                    value = "escolha",
                     h2('Escolha seus Animes', style = 'text-align:center'),
                     h4('Por favor escolha 5 animes da tabela abaixo.'),
                     h4('Você pode clicar em "Limpar Animes" para limpar os animes que você escolheu.'),
@@ -95,6 +97,7 @@ body <- dashboardBody(
                 # Rate animes tab
                 tabPanel(
                   title = "Avalie",
+                  value = "avalie",
                   fluidRow(
                      h2('Dê a nota para os Animes', style = 'text-align:center'),
                      h4('Por favor, dê uma nota de 0 a 10 para os Animes que escolheu', style = 'text-align:center')
@@ -142,6 +145,7 @@ body <- dashboardBody(
               ),
               # Show results  ----
               tabPanel(title = "Seus Matches",
+                       value = "result",
                        fluidRow(
                            h2('Encontramos animes que combinam com você!', style = 'text-align:center'),
                            DT::dataTableOutput("match_table"), width = 12, title = 'Your Closest Matched Critics'),
