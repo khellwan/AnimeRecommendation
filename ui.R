@@ -1,4 +1,11 @@
 ## ui.R ##
+library(shiny)
+library(dplyr)
+library(DT)
+library(data.table)
+library(shinythemes)
+library(shinyWidgets)
+library(shinydashboard)
 
 # Sidebar ----
 sidebar <- dashboardSidebar(

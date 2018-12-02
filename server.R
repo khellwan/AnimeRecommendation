@@ -4,6 +4,11 @@ library(DT)
 library(data.table)
 library(shinythemes)
 library(shinyWidgets)
+library(qlcMatrix)
+
+getAnimeFromName <- function(animeData, animeName){
+  return(animeData[which(animeData$title==animeName),])
+}
 
 
 server <- function(input, output, session) {
@@ -18,6 +23,16 @@ server <- function(input, output, session) {
 
     #Anime x User rating table
     userAnime <- read.table(file="./data/userAnime.csv",row.names=1,sep=",",header=TRUE)
+    #Normalized by mean
+    userAnimeNorm <- userAnime
+    for(i in 1:ncol(userAnimeNorm)){
+        colMean <- mean(userAnimeNorm[,i],na.rm=TRUE)
+        userAnimeNorm[,i] <- userAnimeNorm[,i]-colMean
+        userAnimeNorm[,i][is.na(userAnimeNorm[,i])]=0
+        if(i %% 50==0){
+            print(i)
+        }
+    }
     
     # Menu bar ----
     output$menu <- renderMenu({
@@ -172,15 +187,49 @@ server <- function(input, output, session) {
         # Renderizar tabela de match usando o dataframe
         # Change tab to result
         updateTabsetPanel(session, 'inTabset', selected = 'result')
+        
+        # Pegar os nomes dos animes inseridos pelo usuário (que estão no vetor anime_vec)
+        userChosenAnime <- getAnimeFromName(input$anime1)
+        rbind(userChosenAnime ,getAnimeFromName(input$anime2))
+        rbind(userChosenAnime ,getAnimeFromName(input$anime3))
+        rbind(userChosenAnime ,getAnimeFromName(input$anime4))
+        rbind(userChosenAnime ,getAnimeFromName(input$anime5))
+        # Gerar uma amostra aleatória do csv de avaliações por usuário
+        #Pega 100 usu�rios
+        #ratingSample <- userAnimeNorm[,sample(colnames(userAnimeNorm),100)]
+        ratingSample <- userAnimeNorm
+        ratingSample <- cbind(ratingSample, "user"=rep(0,nrow(userAnimeNorm)))
+        #Adiciona os ratings do usuario para comparacao
+        for(i in 1:length(userChosenAnime$anime_id)){
+            ratingSample[userChosenAnime$anime_id[i],"user"]=score_vec()[i]-mean(score_vec())
+        }
+        
+        # Fazer uma matriz de correlação com outros usuários
+        userCorrelation=sort(cosSparse(as.matrix(ratingSample))["user",][names(ratingSample)!="user"],decreasing=TRUE)
+        #Considera os 5 usuarios com maior relacao
+        userCorrelation=userCorrelation[1:5]
+        userRating=ratingSample[ratingSample$user==0,]
+        #Media ponderada de cada usuario para determinar a nota estimada de cada anime
+        for(i in 1:length(userRating[,"user"])){
+            numerador=0
+            denominador=sum(userCorrelation)
+            for(j in 1:length(userCorrelation)){
+                numerador = numerador + userCorrelation[j]*userAnimeNorm[rownames(userRating)[i],colnames(userCorrelation)[j]]
+            }
+            userRating[i,"user"]=numerador/denominador
+        }
+        #Top 10 animes
+        top10Ratings = userRating[which(userRating[,"user"]>=sort(userRating[,"user"],decreasing=TRUE)[10]),"user"]
+        top10Animes = animesData[colnames(top10Ratings),]
+        # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (na tabela see_animes)
+        # Devolver outros animes que esses usuários com alta correlação avaliaram negativamente (na tabela avoid_animes)
     })
     
     
     # ---- Calculate correlation ----
     
-    # Pegar os nomes dos animes inseridos pelo usuário (que estão no vetor anime_vec)
-    # Gerar uma amostra aleatória do csv de avaliações por usuário
-    # Fazer uma matriz de correlação com outros usuários
-    # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (na tabela see_animes)
-    # Devolver outros animes que esses usuários com alta correlação avaliaram negativamente (na tabela avoid_animes)
+    
+    
+    
     
 }
