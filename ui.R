@@ -52,6 +52,7 @@ body <- dashboardBody(
         ),
         # Recommendation ----
         tabItem(tabName = "choose",
+            fluidRow(
             tabBox(
                 id = 'inTabset',
                 tabPanel( 
@@ -109,6 +110,7 @@ body <- dashboardBody(
                      h2('Dê a nota para os Animes', style = 'text-align:center'),
                      h4('Por favor, dê uma nota de 0 a 10 para os Animes que escolheu', style = 'text-align:center')
                    ),
+                  fluidRow(
                    column(
                        fluidRow(
                          # Display user's selected animes
@@ -149,20 +151,20 @@ body <- dashboardBody(
                        width = 12,
                        offset = 1
                    )
+                  )
               ),
               # Show results  ----
-              tabPanel(title = "Seus Matches",
+              tabPanel(title = "Recomendações",
                        value = "result",
                        fluidRow(
-                           h2('Encontramos animes que combinam com você!', style = 'text-align:center'),
-                           DT::dataTableOutput("match_table"), width = 12, title = 'Your Closest Matched Critics'),
+                           h2('Encontramos animes que combinam com você!', style = 'text-align:center')
+                       ),
                        fluidRow(
-                           column(h3('Animes para assistir', style = 'text-align:center'),
-                                  DT::dataTableOutput('see_animes'), width = 6),
-                           column(h3('Animes para evitar', style = 'text-align:center'),
-                                  DT::dataTableOutput('avoid_animes'), width = 6))
+                           h3('Animes para assistir', style = 'text-align:center'),
+                           DT::dataTableOutput('see_animes'), width = 3)
               )
           )
+        )
         )
        )
     )

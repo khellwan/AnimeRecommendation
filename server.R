@@ -29,9 +29,9 @@ server <- function(input, output, session) {
         colMean <- mean(userAnimeNorm[,i],na.rm=TRUE)
         userAnimeNorm[,i] <- userAnimeNorm[,i]-colMean
         userAnimeNorm[,i][is.na(userAnimeNorm[,i])]=0
-        if(i %% 50==0){
-            print(i)
-        }
+        #if(i %% 50==0){
+        #    print(i)
+        #}
     }
     
     # Menu bar ----
@@ -189,13 +189,13 @@ server <- function(input, output, session) {
         updateTabsetPanel(session, 'inTabset', selected = 'result')
         
         # Pegar os nomes dos animes inseridos pelo usuário (que estão no vetor anime_vec)
-        userChosenAnime <- getAnimeFromName(input$anime1)
-        rbind(userChosenAnime ,getAnimeFromName(input$anime2))
-        rbind(userChosenAnime ,getAnimeFromName(input$anime3))
-        rbind(userChosenAnime ,getAnimeFromName(input$anime4))
-        rbind(userChosenAnime ,getAnimeFromName(input$anime5))
+        userChosenAnime <- getAnimeFromName(animesData, input$anime1)
+        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime2))
+        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime3))
+        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime4))
+        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime5))
         # Gerar uma amostra aleatória do csv de avaliações por usuário
-        #Pega 100 usu�rios
+        #Pega 100 usuarios
         #ratingSample <- userAnimeNorm[,sample(colnames(userAnimeNorm),100)]
         ratingSample <- userAnimeNorm
         ratingSample <- cbind(ratingSample, "user"=rep(0,nrow(userAnimeNorm)))
@@ -221,15 +221,12 @@ server <- function(input, output, session) {
         #Top 10 animes
         top10Ratings = userRating[which(userRating[,"user"]>=sort(userRating[,"user"],decreasing=TRUE)[10]),"user"]
         top10Animes = animesData[colnames(top10Ratings),]
-        # Devolver outros animes que esses usuários com alta correlação avaliaram positivamente (na tabela see_animes)
-        # Devolver outros animes que esses usuários com alta correlação avaliaram negativamente (na tabela avoid_animes)
+        
+        # Create the table with recommendations
+        #xarue <- data.frame("Animes Recomendados" = c("InuYasha", "Sword Art Online", "Yu-Gi-Oh!", "Dragon Ball Super", "Code Geass: Lelouch of the Rebellion", "Nisekoi", "Shingeki no Kyojin", "Hunter × Hunter", "Fullmetal Alchemist Brotherhood", "Boku no Hero Academia"))
+        output$see_animes = DT::renderDataTable({
+            datatable(top10animes, rownames = FALSE, selection = 'none')
+        })
+    
     })
-    
-    
-    # ---- Calculate correlation ----
-    
-    
-    
-    
-    
 }
