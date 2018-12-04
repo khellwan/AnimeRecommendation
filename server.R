@@ -33,6 +33,7 @@ server <- function(input, output, session) {
         #    print(i)
         #}
     }
+    print("Loaded datasets")
     
     # Menu bar ----
     output$menu <- renderMenu({
@@ -93,7 +94,7 @@ server <- function(input, output, session) {
     
     # Creates vector of user selected ratings
     score_vec = reactive({
-        return(c(as.numeric(input$rating1)/10, as.numeric(input$rating2)/10, as.numeric(input$rating3)/10, as.numeric(input$rating4)/10, as.numeric(input$rating5)/10))
+        return(c(as.numeric(input$rating1), as.numeric(input$rating2), as.numeric(input$rating3), as.numeric(input$rating4), as.numeric(input$rating5)))
     })
     
     # Creates a proxy table for clearing rows
@@ -190,10 +191,10 @@ server <- function(input, output, session) {
         
         # Pegar os nomes dos animes inseridos pelo usuário (que estão no vetor anime_vec)
         userChosenAnime <- getAnimeFromName(animesData, input$anime1)
-        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime2))
-        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime3))
-        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime4))
-        rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime5))
+        userChosenAnime <- rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime2))
+        userChosenAnime <- rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime3))
+        userChosenAnime <- rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime4))
+        userChosenAnime <- rbind(userChosenAnime ,getAnimeFromName(animesData, input$anime5))
         # Gerar uma amostra aleatória do csv de avaliações por usuário
         #Pega 100 usuarios
         #ratingSample <- userAnimeNorm[,sample(colnames(userAnimeNorm),100)]
@@ -201,31 +202,40 @@ server <- function(input, output, session) {
         ratingSample <- cbind(ratingSample, "user"=rep(0,nrow(userAnimeNorm)))
         #Adiciona os ratings do usuario para comparacao
         for(i in 1:length(userChosenAnime$anime_id)){
-            ratingSample[userChosenAnime$anime_id[i],"user"]=score_vec()[i]-mean(score_vec())
+            ratingSample[as.character(userChosenAnime$anime_id[i]),"user"]=score_vec()[i]-mean(score_vec())
         }
         
         # Fazer uma matriz de correlação com outros usuários
         userCorrelation=sort(cosSparse(as.matrix(ratingSample))["user",][names(ratingSample)!="user"],decreasing=TRUE)
         #Considera os 5 usuarios com maior relacao
         userCorrelation=userCorrelation[1:5]
+        #Separa os animes nao vistos do usuario e os animes que os usuarios com correlacao alta ja avaliaram
         userRating=ratingSample[ratingSample$user==0,]
+        userRating=userRating[as.vector(rowMin(as.matrix(userRating[names(userCorrelation)])))!=0,c(names(userCorrelation),"user")]
+        print(paste(c("Prevendo a nota de ",nrow(userRating)," animes"), collapse=""))
         #Media ponderada de cada usuario para determinar a nota estimada de cada anime
         for(i in 1:length(userRating[,"user"])){
             numerador=0
             denominador=sum(userCorrelation)
             for(j in 1:length(userCorrelation)){
-                numerador = numerador + userCorrelation[j]*userAnimeNorm[rownames(userRating)[i],colnames(userCorrelation)[j]]
+                numerador = numerador + userCorrelation[j]*userAnimeNorm[rownames(userRating)[i],names(userCorrelation)[j]]
             }
             userRating[i,"user"]=numerador/denominador
+            if(i%%10==0){
+              print(i)
+            }
         }
         #Top 10 animes
-        top10Ratings = userRating[which(userRating[,"user"]>=sort(userRating[,"user"],decreasing=TRUE)[10]),"user"]
-        top10Animes = animesData[colnames(top10Ratings),]
+        #Verifica se o id do anime em animesData esta em uma das linhas da tabela de animes com maior nota para o usuario
+        print("Encontrando os melhores animes..")
+        top10Animes = animesData[animesData$anime_id %in% as.numeric(rownames(userRating[which(userRating[,"user"]>=sort(userRating[,"user"],decreasing=TRUE)[10]),])),]
         
         # Create the table with recommendations
         #xarue <- data.frame("Animes Recomendados" = c("InuYasha", "Sword Art Online", "Yu-Gi-Oh!", "Dragon Ball Super", "Code Geass: Lelouch of the Rebellion", "Nisekoi", "Shingeki no Kyojin", "Hunter × Hunter", "Fullmetal Alchemist Brotherhood", "Boku no Hero Academia"))
         output$see_animes = DT::renderDataTable({
-            datatable(top10animes, rownames = FALSE, selection = 'none')
+            datatable(data.frame(
+                "Animes Recomendados"=top10Animes$title,
+                "Imagem"=paste('<img src="',top10Animes$image_url,'" height=400></img>',sep="")), rownames = FALSE, selection = 'none', escape=FALSE)
         })
     
     })
